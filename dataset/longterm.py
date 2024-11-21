@@ -97,10 +97,11 @@ class LongtermDataset(Dataset):
         }
     
 def test():
-    a = [1,4,3,4,5,4,7,3,9]
-    b,count = np.unique(a, return_counts=True)
-    mask = count >= 2
-    print(b[mask], type(b[mask]))
-
+    from config import config_parser
+    args = config_parser()
+    longterm = LongtermDataset(args, max_interval=12)
+    longterm[0]
+    longterm[1]
+    
 if __name__ == "__main__":
     test()

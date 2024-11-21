@@ -14,8 +14,8 @@ class SimpleDepthDataset(Dataset):
         self.seq_dir = args.data_dir
         self.seq_name = os.path.basename(self.seq_dir.rstrip('/'))
         self.img_dir = os.path.join(self.seq_dir, 'color')
-        self.depth_dir = os.path.join(self.seq_dir, 'raw_depth', "depth")
-        self.depthmask_dir = os.path.join(self.seq_dir, 'raw_depth', "mask")
+        # self.depth_dir = os.path.join(self.seq_dir, 'raw_depth', "depth")
+        # self.depthmask_dir = os.path.join(self.seq_dir, 'raw_depth', "mask")
         self.flow_dir = os.path.join(self.seq_dir, 'raft_exhaustive')
         img_names = sorted(os.listdir(self.img_dir))
         self.num_imgs = min(self.args.num_imgs, len(img_names))
@@ -91,9 +91,9 @@ class SimpleDepthDataset(Dataset):
             id1 = idx % self.img_range.value - self.img_range.value // 2 + self.num_imgs // 2
         else:   
             id1 = idx % self.num_imgs
-
-        max_interval = min(self.max_interval, self.num_imgs - 1)
+      
         # 选定第一帧后，候选帧的范围
+        max_interval = min(self.max_interval, self.num_imgs - 1)
         start = max(id1 + self.candidate_pair_range[id1, 0], 0, id1 - max_interval)
         end = min(id1 + self.candidate_pair_range[id1, 1], self.num_imgs - 1, id1 + max_interval)
         id2s = np.arange(start, end + 1)
@@ -107,7 +107,7 @@ class SimpleDepthDataset(Dataset):
         sample_weights /= np.sum(sample_weights)
         id2 = np.random.choice(id2s, p=sample_weights)
 
-        # 加载对应帧的flow和mask
+        # 加载对应pair的flow和mask
         offset = 15 if id2 - id1 > 0 else 16
         flow = self.flow[id1, id2 - id1 + offset].reshape(-1, 2)
         mask = self.masks[id1, id2 - id1 + offset].reshape(-1)
@@ -118,6 +118,7 @@ class SimpleDepthDataset(Dataset):
         is_replace=((mask>0).sum() < self.num_pts) # 如果可用点小于num_pts，则有放回采样
         select_mask = np.random.choice(mask.shape[0], self.num_pts, replace=is_replace, p=mask)
         frame_interval = abs(id1 - id2)
+           
         # 采样pair的权重
         pair_weight = np.cos((frame_interval - 1.) / max_interval * np.pi / 3)  
 
