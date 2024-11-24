@@ -1,13 +1,12 @@
 import os
 import glob
 import torch
-import tqdm
 import numpy as np
 from torch.utils.data import Dataset
 
 
 class LongtermDataset(Dataset):
-    def __init__(self, args, max_interval=8, minbatch=4):
+    def __init__(self, args, max_interval=None, minbatch=4):
         self.args = args
         self.seq_dir = args.data_dir
         self.seq_name = os.path.basename(self.seq_dir.rstrip('/'))
@@ -15,13 +14,13 @@ class LongtermDataset(Dataset):
         self.match_dir = os.path.join(self.seq_dir, 'match')
         if not os.path.exists(self.match_dir):
             raise FileNotFoundError(f"Directory '{self.match_dir}' does not exist.")
-        
+
         all_matches = sorted(glob.glob(os.path.join(self.match_dir, '*.npz')))
         all_images = sorted(glob.glob(os.path.join(self.img_dir, '*.jpg')))
         self.num_imgs = min(self.args.num_imgs, len(all_images))
         # n*7: [id1, x1, y1, id2, x2, y2, weight]
         self.matches = np.concatenate([np.load(matchfile)['match'] for matchfile in all_matches[:self.num_imgs]], axis=0)
-        
+
         self.matchid = []
         self.candidates = []
         self.batchsize = 1e10
@@ -46,12 +45,15 @@ class LongtermDataset(Dataset):
             self.candidates.append(valid_candidates)
             valid_pairs += valid_candidates.size
         print("longterm dataset batchsize: ", self.batchsize)
-        
+
         if valid_pairs < self.num_imgs*2:
             print("longterm dataset no enough pairs")
             self.longterm = False
         else:
             self.longterm = True
+
+    def increase_range(self):
+        pass
 
     def __len__(self):
         if not self.longterm:
@@ -72,7 +74,7 @@ class LongtermDataset(Dataset):
         idx %= len(self.matchid)
         id1 = self.matchid[idx]
         id2 = np.random.choice(self.candidates[idx])
-        
+
         # 筛选匹配点
         candidates = self.matches[(self.matches[..., 0] == id1) & (self.matches[..., 3] == id2)]
 
@@ -95,13 +97,15 @@ class LongtermDataset(Dataset):
             'pts2': pts2,
             'weights': weights,
         }
-    
+
+
 def test():
     from config import config_parser
     args = config_parser()
     longterm = LongtermDataset(args, max_interval=12)
     longterm[0]
     longterm[1]
-    
+
+
 if __name__ == "__main__":
     test()

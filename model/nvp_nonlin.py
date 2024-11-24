@@ -162,7 +162,7 @@ class NVPnonlin(nn.Module):
             feature_dim=32,  # spatial feature dimension
             t_dim=8,  # time dimension
             bound=torch.tensor([[-1, -1, -1], [1, 1, 1]]),
-            base_res=8,
+            spatial_base_res=8,
             net_layer=2,  # the layer number of MLP for predicting control points
             device='cuda',
     ):
@@ -190,7 +190,7 @@ class NVPnonlin(nn.Module):
 
             # get transformation
             map = MultiResBiplane(feat_dim=feature_dim,
-                                  res=[base_res, base_res*8],
+                                  res=[spatial_base_res, spatial_base_res*8],
                                   t_dim=t_dim,
                                   output_dim=10,
                                   net_layer=net_layer,

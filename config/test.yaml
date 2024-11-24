@@ -1,0 +1,44 @@
+expname: test
+data_dir: /data/datasets/dataset/parkour
+
+# training
+num_pairs: 96
+num_pts: 1024
+num_workers: 8
+
+use_error_map: True
+use_count_map: True
+dataset_types: long+simple
+dataset_weights: [0.5, 0.5]
+
+dbg: True
+smooth_weight: 100
+start_interval: 12
+grad_clip: 10
+
+inc_step: 20
+
+
+trainer: combo
+deformer: nonlin
+lr_deform: 3e-3
+feat_dim: 32
+multires: True
+triplane_res: 12
+net_layer: 3
+
+opt_depth: True
+depth_res: 0.3
+lr_depth: 5e-3 
+
+perspective: True
+
+lrate_decay_steps: 5000
+lrate_decay_factor: 0.33
+
+# inference
+use_max_loc: True
+vis_occlusion: True
+i_weight: 11000
+i_cache: 11000
+num_iters: 22000
